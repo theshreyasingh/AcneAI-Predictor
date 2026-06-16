@@ -95,3 +95,10 @@ if st.button("Predict Acne Severity"):
         st.info(
             "🍔 Frequent oily food consumption may be associated with increased acne severity."
         )
+
+        st.subheader("Factors Influencing Acne Severity")
+
+st.write("Stress Level : 35.9%")
+st.write("Oily Food : 24.9%")
+st.write("Water Intake : 22.7%")
+st.write("Sleep Hours : 16.5%")
