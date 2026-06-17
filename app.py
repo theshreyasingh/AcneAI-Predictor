@@ -1,6 +1,7 @@
-import plotly.express as px
+
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 from sklearn.ensemble import RandomForestRegressor
 
 # Load data
@@ -60,6 +61,8 @@ oily_food = st.selectbox(
     "Oily Food Consumed?",
     ["No", "Yes"]
 )
+
+# Prediction Section
 if st.button("Predict Acne Severity"):
 
     oily = 1 if oily_food == "Yes" else 0
@@ -77,6 +80,26 @@ if st.button("Predict Acne Severity"):
         f"Predicted Acne Severity: {prediction[0]:.2f}/5"
     )
 
+    # Risk Score
+    risk_score = (prediction[0] / 5) * 100
+
+    if risk_score < 40:
+        risk_status = "🟢 Low Risk"
+    elif risk_score < 70:
+        risk_status = "🟡 Moderate Risk"
+    else:
+        risk_status = "🔴 High Risk"
+
+    st.subheader("🎯 Acne Risk Assessment")
+
+    st.metric(
+        label="Acne Risk Score",
+        value=f"{risk_score:.0f}/100"
+    )
+
+    st.write(f"Risk Status: {risk_status}")
+
+    # Recommendations
     if stress >= 4:
         st.warning(
             "⚠️ High stress levels may contribute to acne flare-ups."
@@ -97,13 +120,15 @@ if st.button("Predict Acne Severity"):
             "🍔 Frequent oily food consumption may be associated with increased acne severity."
         )
 
-        st.subheader("Factors Influencing Acne Severity")
+# Feature Importance
+st.subheader("📊 Factors Influencing Acne Severity")
 
 st.write("Stress Level : 35.9%")
 st.write("Oily Food : 24.9%")
 st.write("Water Intake : 22.7%")
 st.write("Sleep Hours : 16.5%")
 
+# Daily Tracker
 st.markdown("---")
 st.header("📝 Daily Acne Log")
 
@@ -131,10 +156,12 @@ if st.button("Save Today's Entry"):
 
     try:
         old_data = pd.read_csv(tracker_file)
+
         updated_data = pd.concat(
             [old_data, new_entry],
             ignore_index=True
         )
+
     except FileNotFoundError:
         updated_data = new_entry
 
@@ -146,6 +173,8 @@ if st.button("Save Today's Entry"):
     st.success(
         "✅ Daily entry saved successfully!"
     )
+
+# Dashboard
 st.markdown("---")
 st.header("📊 Acne Progress Dashboard")
 
@@ -154,13 +183,16 @@ try:
         "data/acne_tracker.csv"
     )
 
-    st.write(tracker_df)
+    st.write("Your Recorded Entries")
+
+    st.dataframe(tracker_df)
 
     fig = px.line(
         tracker_df,
         x="Date",
         y="Acne_Severity",
-        title="Acne Severity Over Time"
+        title="Acne Severity Over Time",
+        markers=True
     )
 
     st.plotly_chart(
@@ -172,3 +204,54 @@ except:
     st.info(
         "Add more entries to see dashboard analytics."
     )
+
+# Smart Insights
+st.markdown("---")
+st.header("🧠 Smart Insights")
+
+try:
+    tracker_df = pd.read_csv(
+        "data/acne_tracker.csv"
+    )
+
+    avg_acne = tracker_df["Acne_Severity"].mean()
+    avg_sleep = tracker_df["Sleep_Hours"].mean()
+    avg_water = tracker_df["Water_Liters"].mean()
+    avg_stress = tracker_df["Stress_Level"].mean()
+
+    st.write(
+        f"Average Acne Severity: {avg_acne:.2f}/5"
+    )
+
+    st.write(
+        f"Average Sleep: {avg_sleep:.2f} hours"
+    )
+
+    st.write(
+        f"Average Water Intake: {avg_water:.2f} L"
+    )
+
+    st.write(
+        f"Average Stress Level: {avg_stress:.2f}/5"
+    )
+
+    if avg_stress >= 3.5:
+        st.warning(
+            "⚠️ Stress appears to be a major contributing factor."
+        )
+
+    if avg_sleep < 6:
+        st.warning(
+            "😴 Your average sleep is below recommended levels."
+        )
+
+    if avg_water < 2:
+        st.info(
+            "💧 Increasing water intake may benefit your skin health."
+        )
+
+except:
+    st.info(
+        "Not enough data for insights yet."
+    )
+
