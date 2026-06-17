@@ -1,3 +1,4 @@
+import plotly.express as px
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
@@ -102,3 +103,72 @@ st.write("Stress Level : 35.9%")
 st.write("Oily Food : 24.9%")
 st.write("Water Intake : 22.7%")
 st.write("Sleep Hours : 16.5%")
+
+st.markdown("---")
+st.header("📝 Daily Acne Log")
+
+actual_acne = st.slider(
+    "Today's Actual Acne Severity",
+    1,
+    5,
+    2
+)
+
+if st.button("Save Today's Entry"):
+
+    from datetime import date
+
+    new_entry = pd.DataFrame({
+        "Date": [str(date.today())],
+        "Sleep_Hours": [sleep],
+        "Water_Liters": [water],
+        "Stress_Level": [stress],
+        "Oily_Food": [oily_food],
+        "Acne_Severity": [actual_acne]
+    })
+
+    tracker_file = "data/acne_tracker.csv"
+
+    try:
+        old_data = pd.read_csv(tracker_file)
+        updated_data = pd.concat(
+            [old_data, new_entry],
+            ignore_index=True
+        )
+    except FileNotFoundError:
+        updated_data = new_entry
+
+    updated_data.to_csv(
+        tracker_file,
+        index=False
+    )
+
+    st.success(
+        "✅ Daily entry saved successfully!"
+    )
+st.markdown("---")
+st.header("📊 Acne Progress Dashboard")
+
+try:
+    tracker_df = pd.read_csv(
+        "data/acne_tracker.csv"
+    )
+
+    st.write(tracker_df)
+
+    fig = px.line(
+        tracker_df,
+        x="Date",
+        y="Acne_Severity",
+        title="Acne Severity Over Time"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
+
+except:
+    st.info(
+        "Add more entries to see dashboard analytics."
+    )
